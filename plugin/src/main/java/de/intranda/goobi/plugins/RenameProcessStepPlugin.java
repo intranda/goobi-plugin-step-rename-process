@@ -62,10 +62,7 @@ public class RenameProcessStepPlugin implements IStepPluginVersion2 {
 
     @Override
     public PluginGuiType getPluginGuiType() {
-        return PluginGuiType.FULL;
-        // return PluginGuiType.PART;
-        // return PluginGuiType.PART_AND_FULL;
-        // return PluginGuiType.NONE;
+        return PluginGuiType.NONE;
     }
 
     @Override
