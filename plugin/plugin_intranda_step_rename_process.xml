@@ -8,14 +8,48 @@
 	-->
     
     <config>
-        <!-- which projects to use for (can be more then one, otherwise use *) -->
         <project>*</project>
         <step>*</step>
-        
-        <!-- sample parameter -->
-        <value>test</value>
+
+        <!-- The process title is generated based on the following configuration. You can use
+             Goobi variables here as well as the characters underscore _ and minus -
+             Empty properties are skipped. Spaces are trimmed.
+
+             Example:
+               {processproperty.Institution} = Public Library of Example City
+               {processproperty.Font} =
+               {meta.CatalogIDDigitalLocalCatalogue} = ID123456789
+
+               config = {processproperty.Institution}_{processproperty.Font}_{meta.CatalogIDDigitalLocalCatalogue}
+
+               result: PublicLibraryofExampleCity__ID123456789
+         -->
+
         <!-- display button to finish the task directly from within the entered plugin -->
         <allowTaskFinishButtons>true</allowTaskFinishButtons>
+         
+        <newProcessTitle>{process.Institution}_{meta.CatalogIDDigitalLocalCatalogue}</newProcessTitle>
+    </config>
+    
+    <config>
+    	<project>Archive_Project</project>
+    	<step>*</step>
+    	<allowTaskFinishButtons>true</allowTaskFinishButtons>
+    	<newProcessTitle>{process.CreatorsAllOrigin}_{meta.PublicationYear}</newProcessTitle>
+    </config>
+    
+    <config>
+    	<project>*</project>
+    	<step>STEP_NAME</step>
+    	<allowTaskFinishButtons>true</allowTaskFinishButtons>
+    	<newProcessTitle>{product.DocType}-{process.Creator of digital edition}-{process.Template}</newProcessTitle>
+    </config>
+    
+    <config>
+    	<project>PROJECT_NAME</project>
+    	<step>STEP_NAME</step>
+    	<allowTaskFinishButtons>false</allowTaskFinishButtons>
+    	<newProcessTitle>Some Title</newProcessTitle>
     </config>
 
 </config_plugin>

@@ -1,5 +1,7 @@
 package de.intranda.goobi.plugins;
 
+import java.io.IOException;
+
 /**
  * This file is part of a plugin for Goobi - a Workflow tool for the support of mass digitization.
  *
@@ -20,9 +22,13 @@ package de.intranda.goobi.plugins;
  */
 
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.configuration.SubnodeConfiguration;
+import org.apache.commons.lang3.StringUtils;
 import org.goobi.beans.Step;
+import org.goobi.production.enums.LogType;
 import org.goobi.production.enums.PluginGuiType;
 import org.goobi.production.enums.PluginReturnValue;
 import org.goobi.production.enums.PluginType;
@@ -30,9 +36,17 @@ import org.goobi.production.enums.StepReturnValue;
 import org.goobi.production.plugin.interfaces.IStepPluginVersion2;
 
 import de.sub.goobi.config.ConfigPlugins;
+import de.sub.goobi.helper.Helper;
+import de.sub.goobi.helper.VariableReplacer;
+import de.sub.goobi.helper.exceptions.SwapException;
+import de.sub.goobi.persistence.managers.ProcessManager;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import net.xeoh.plugins.base.annotations.PluginImplementation;
+import ugh.dl.DigitalDocument;
+import ugh.dl.Prefs;
+import ugh.exceptions.PreferencesException;
+import ugh.exceptions.ReadException;
 
 @PluginImplementation
 @Log4j2
@@ -42,22 +56,49 @@ public class RenameProcessStepPlugin implements IStepPluginVersion2 {
     private String title = "intranda_step_rename_process";
     @Getter
     private Step step;
-    @Getter
-    private String value;
     @Getter 
     private boolean allowTaskFinishButtons;
     private String returnPath;
 
+    private String newProcessTitle; // title used to replace the old one
+    private transient VariableReplacer replacer;
+    private org.goobi.beans.Process process;
+    private static final String PATTERN_REGEX = "\\{(.*?)\\}"; // regex used for matching unrecognized goobi variables
+    private Pattern pattern = Pattern.compile(PATTERN_REGEX);
+
     @Override
     public void initialize(Step step, String returnPath) {
+        log.debug("=============================== Starting Rename Process ===============================");
+
         this.returnPath = returnPath;
         this.step = step;
                 
         // read parameters from correct block in configuration file
-        SubnodeConfiguration myconfig = ConfigPlugins.getProjectAndStepConfig(title, step);
-        value = myconfig.getString("value", "default value"); 
-        allowTaskFinishButtons = myconfig.getBoolean("allowTaskFinishButtons", false);
-        log.info("RenameProcess step plugin initialized");
+        SubnodeConfiguration myConfig = ConfigPlugins.getProjectAndStepConfig(title, step);
+        allowTaskFinishButtons = myConfig.getBoolean("allowTaskFinishButtons", false); // needed?
+
+        newProcessTitle = myConfig.getString("newProcessTitle", "");
+        log.debug("processTitle = " + newProcessTitle);
+
+        // initialize VariableReplacer
+        process = step.getProzess();
+        try {
+            DigitalDocument dd = process.readMetadataFile().getDigitalDocument();
+            Prefs prefs = process.getRegelsatz().getPreferences();
+            replacer = new VariableReplacer(dd, prefs, process, step);
+        } catch (ReadException | IOException | SwapException | PreferencesException e) {
+            logBoth(process.getId(), LogType.ERROR, "Exception happened during initialization: " + e.getMessage());
+        }
+
+        // replace goobi variables
+        newProcessTitle = replacer.replace(newProcessTitle);
+        log.debug("newProcessTitle = " + newProcessTitle);
+
+        // remove all spaces in between and from both ends
+        newProcessTitle = newProcessTitle.replace(" ", "").strip();
+        log.debug("newProcessTitle = " + newProcessTitle);
+
+        logBoth(process.getId(), LogType.INFO, "RenameProcess step plugin initialized");
     }
 
     @Override
@@ -103,13 +144,59 @@ public class RenameProcessStepPlugin implements IStepPluginVersion2 {
 
     @Override
     public PluginReturnValue run() {
-        boolean successful = true;
-        // your logic goes here
+        log.debug("process title before = " + process.getTitel());
         
-        log.info("RenameProcess step plugin executed");
-        if (!successful) {
+        // validation of newProcessTitle
+        if (newProcessTitle.contains("{")) {
+            // there exists some unrecognized goobi variable
+            // find them out and place a warning
+            Matcher matcher = pattern.matcher(newProcessTitle);
+            while(matcher.find()) {
+                logBoth(process.getId(), LogType.WARN, "Unrecognized Goobi Variable: " + matcher.group(1));
+            }
+            newProcessTitle = newProcessTitle.replaceAll(PATTERN_REGEX, "");
+        }
+        if (StringUtils.isBlank(newProcessTitle)) {
+            // do not rename the process
+            logBoth(process.getId(), LogType.ERROR, "Cannot rename a process with blank!");
             return PluginReturnValue.ERROR;
         }
+
+        process.changeProcessTitle(newProcessTitle);
+        ProcessManager.saveProcessInformation(process);
+
+        log.debug("process title after = " + process.getTitel());
+
+        logBoth(process.getId(), LogType.INFO, "RenameProcess step plugin executed");
+        log.debug("=============================== Stopping Rename Process ===============================");
+
         return PluginReturnValue.FINISH;
+    }
+
+    /**
+     * 
+     * @param processId
+     * @param logType
+     * @param message message to be shown to both terminal and journal
+     */
+    private void logBoth(int processId, LogType logType, String message) {
+        String logMessage = "Rename Process Step Plugin: " + message;
+        switch (logType) {
+            case ERROR:
+                log.error(logMessage);
+                break;
+            case DEBUG:
+                log.debug(logMessage);
+                break;
+            case WARN:
+                log.warn(logMessage);
+                break;
+            default: // INFO
+                log.info(logMessage);
+                break;
+        }
+        if (processId > 0) {
+            Helper.addMessageToProcessJournal(processId, logType, logMessage);
+        }
     }
 }
