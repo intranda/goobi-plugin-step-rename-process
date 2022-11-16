@@ -56,8 +56,7 @@ public class RenameProcessStepPlugin implements IStepPluginVersion2 {
     private String title = "intranda_step_rename_process";
     @Getter
     private Step step;
-    @Getter 
-    private boolean allowTaskFinishButtons;
+
     private String returnPath;
 
     private String newProcessTitle; // title used to replace the old one
@@ -75,7 +74,6 @@ public class RenameProcessStepPlugin implements IStepPluginVersion2 {
                 
         // read parameters from correct block in configuration file
         SubnodeConfiguration myConfig = ConfigPlugins.getProjectAndStepConfig(title, step);
-        allowTaskFinishButtons = myConfig.getBoolean("allowTaskFinishButtons", false); // needed?
 
         newProcessTitle = myConfig.getString("newProcessTitle", "");
         log.debug("processTitle = " + newProcessTitle);
