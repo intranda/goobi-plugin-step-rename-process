@@ -2,9 +2,9 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>io.goobi.workflow.plugin</groupId>
-    <artifactId>plugin-step-rename_process</artifactId>
+    <artifactId>plugin-step-rename-process</artifactId>
     <version>24.03-SNAPSHOT</version>
   </parent>
-  <artifactId>plugin-step-rename_process-base</artifactId>
+  <artifactId>plugin-step-rename-process-base</artifactId>
   <packaging>jar</packaging>
 </project>

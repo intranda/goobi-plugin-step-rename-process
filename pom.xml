@@ -7,7 +7,7 @@
     <relativePath />
   </parent>
   <groupId>io.goobi.workflow.plugin</groupId>
-  <artifactId>plugin-step-rename_process</artifactId>
+  <artifactId>plugin-step-rename-process</artifactId>
   <packaging>pom</packaging>
   <modules>
     <module>module-base</module>
