@@ -30,6 +30,7 @@ Daneben gibt es eine Konfigurationsdatei, die an folgender Stelle liegen muss:
 ## Überblick und Funktionsweise
 Zur Inbetriebnahme des Plugins muss dieses für einen oder mehrere gewünschte automatische Aufgaben im Workflow aktiviert werden. Dies erfolgt durch Auswahl des Plugins `intranda_step_rename_process` aus der Liste der installierten Plugins innerhalb der Schrittekonfiguration des Workflows.
 
+![Auswahl des Plugins zur Durchführung des Arbeitsschrittes](screen1_de.png)
 
 ## Konfiguration
 Die Konfiguration des Plugins erfolgt über die Konfigurationsdatei `plugin_intranda_step_rename_process.xml` und kann im laufenden Betrieb angepasst werden. Im folgenden ist eine beispielhafte Konfigurationsdatei aufgeführt:
