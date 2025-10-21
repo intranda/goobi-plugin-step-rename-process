@@ -3,6 +3,10 @@ title: Renaming Processes
 identifier: intranda_step_rename_process
 published: true
 description: Goobi Step Plugin for renaming processes
+keywords:
+    - Goobi workflow
+    - Plugin
+    - Step Plugin
 ---
 ## Introduction
 This step plugin for Goobi workflow renames the process with the name specified in the configuration. You can also use variables from the Variable Replacer to define the renaming of processes.

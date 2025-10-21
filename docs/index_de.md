@@ -3,6 +3,10 @@ title: Umbenennen von Vorgängen
 identifier: intranda_step_rename_process
 published: true
 description: Goobi Step Plugin für das Umbenennen eines Vorgangs
+keywords:
+    - Goobi workflow
+    - Plugin
+    - Step Plugin
 ---
 ## Einführung
 Dieses Step Plugin für Goobi workflow benennt den Vorgang mit dem in der Konfiguration angegebenen Namen um. Hierbei können für die Festlegung der Umbenennung von Vorgängen auch Variablen des Variablen-Replacers verwendet werden.
